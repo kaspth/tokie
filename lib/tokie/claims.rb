@@ -1,3 +1,4 @@
+require 'time'
 require 'tokie/errors'
 
 module Tokie
@@ -7,36 +8,40 @@ module Tokie
     def initialize(payload, options = {})
       @payload = payload
       @purpose = self.class.pick_purpose(options)
-      @expires_at = pick_expiration(options).try { utc.iso8601(3) }
+      @expires_at = pick_expiration(options)
     end
 
     class << self
       attr_accessor :expires_in
 
-      def parse(claims, options)
-        raise ExpiredClaim if expired?(claims['exp'])
+      def parse(claims, options = {})
         raise InvalidSignature if claims['for'] != pick_purpose(options)
 
-        new claims['pld'], expires_at: claims['exp'], for: claims['for']
+        new claims['pld'], expires_at: parse_expiration(claims['exp']), for: claims['for']
       end
 
       def pick_purpose(options)
         options.fetch(:for) { 'universal' }
       end
 
-      def expired?(timestamp)
-        timestamp && Time.now.utc > timestamp
-      end
+      private
+        def parse_expiration(expiration)
+          return unless expiration
+
+          Time.iso8601(expiration).tap do |timestamp|
+            raise ExpiredClaims if Time.now.utc > timestamp
+          end
+        end
     end
 
     def to_h
       { 'pld' => @payload, 'for' => @purpose.to_s }.tap do |claims|
-        claims['exp'] = @expires_at if @expires_at
+        claims['exp'] = @expires_at.utc.iso8601(3) if @expires_at
       end
     end
 
     def ==(other)
-      super && purpose == other.purpose
+      other.is_a?(self.class) && @purpose == other.purpose && @payload == other.payload
     end
 
     private

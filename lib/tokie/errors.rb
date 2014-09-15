@@ -1,4 +1,4 @@
 module Tokie
   class InvalidSignature < StandardError; end
-  class ExpiredClaim < StandardError; end
+  class ExpiredClaims < StandardError; end
 end
