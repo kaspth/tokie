@@ -7,10 +7,6 @@ rescue LoadError, NameError
   $stderr.puts "Skipping Signer test: broken OpenSSL install"
 else
 
-require 'json'
-
-SECRET = 'forYOURsecret'
-
 class SignerTest < ActiveSupport::TestCase
   setup do
     @data = { some: 'data', now: Time.local(2010) }

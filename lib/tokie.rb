@@ -1,5 +1,6 @@
 require 'tokie/claims'
 require 'tokie/signer'
+require 'tokie/encryptor'
 
 module Tokie
   attr_accessor :serializer
@@ -29,9 +30,17 @@ module Tokie
       Signer.new(@claims, options).sign
     end
 
+    def encrypt(options = {})
+      Encryptor.new(@claims, options).encrypt
+    end
+
     class << self
       def verify(signed_token, options = {})
         Signer.verify(signed_token, options)
+      end
+
+      def decrypt(encrypted_token, options = {})
+        Encryptor.decrypt(encrypted_token, options)
       end
     end
   end
