@@ -1,3 +1,4 @@
+require 'active_support/core_ext/object/blank'
 require 'tokie/errors'
 
 module Tokie
@@ -16,38 +17,8 @@ module Tokie
 
     class << self
       def verify(signed_token, options = {})
-        Claims.parse decode_claims(signed_token), options
+        Claims.parse new(signed_token, options).send(:parse_claims), options
       end
-
-      private
-        def decode_claims(signed_token)
-          raise InvalidSignature if signed_token.blank?
-
-          *token_data, digest = signed_token.split('.')
-          data = token_data.join('.')
-
-          if token_data.all(&:present?) && digest.present? && secure_compare(digest, generate_digest(data))
-            begin
-              @serializer.load ::Base64.strict_decode64(token_data.last)
-            rescue ArgumentError => argument_error
-              raise InvalidSignature if argument_error.message =~ %r{invalid base64}
-              raise
-            end
-          else
-            raise InvalidSignature
-          end
-        end
-
-        # constant-time comparison algorithm to prevent timing attacks
-        def secure_compare(a, b)
-          return false unless a.bytesize == b.bytesize
-
-          l = a.unpack "C#{a.bytesize}"
-
-          res = 0
-          b.each_byte { |byte| res |= byte ^ l.shift }
-          res == 0
-        end
     end
 
     private
@@ -57,6 +28,37 @@ module Tokie
 
       def encoded_claims
         @serializer.dump @claims.to_h
+      end
+
+      # Claims can be a signed token which can be parsed
+      def parse_claims
+        raise InvalidSignature if @claims.blank?
+
+        *token_data, digest = @claims.split('.').tap do |parts|
+          raise InvalidSignature unless parts.all?(&:present?)
+        end
+
+        unless secure_compare digest, generate_digest(token_data.join('.'))
+          raise InvalidSignature
+        end
+
+        begin
+          @serializer.load ::Base64.strict_decode64(token_data.last)
+        rescue ArgumentError => argument_error
+          raise InvalidSignature if argument_error.message =~ %r{invalid base64}
+          raise
+        end
+      end
+
+      # constant-time comparison algorithm to prevent timing attacks
+      def secure_compare(a, b)
+        return false unless a.bytesize == b.bytesize
+
+        l = a.unpack "C#{a.bytesize}"
+
+        res = 0
+        b.each_byte { |byte| res |= byte ^ l.shift }
+        res == 0
       end
 
       def generate_digest(data)

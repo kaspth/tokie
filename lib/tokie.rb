@@ -3,6 +3,7 @@ require 'tokie/signer'
 
 module Tokie
   attr_accessor :serializer
+  module_function :serializer, :serializer=
   @serializer = Marshal
 
   class << self
@@ -11,7 +12,7 @@ module Tokie
     end
 
     def decode(*args)
-      args.map { |a| Base64.strict_decode64 a }
+      args.map { |a| Base64.strict_decode64 a }
     end
   end
 
