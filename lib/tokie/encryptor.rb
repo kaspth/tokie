@@ -1,7 +1,11 @@
+require 'tokie/concerns/digestable'
+require 'tokie/concerns/secure_comparable'
 require 'tokie/errors'
 
 module Tokie
   class Encryptor
+    include Digestable, SecureComparable
+
     def initialize(claims, secret:, digest: 'SHA1', serializer: nil, cipher: nil)
       @claims = claims
       @secret = secret
@@ -17,7 +21,7 @@ module Tokie
       encrypted_data = cipher.update(encoded_claims) + cipher.final
 
       header = ::Base64.strict_encode64(encoded_header)
-      auth_tag = cipher.auth_tag header.size
+      auth_tag = generate_auth_tag header, iv, encrypted_data
 
       header << '.' << Tokie.encode(@secret, iv, encrypted_data, auth_tag).join('.')
     end
@@ -41,6 +45,11 @@ module Tokie
         OpenSSL::Cipher::Cipher.new(@cipher).tap do |c|
           c.key = @secret
         end
+      end
+
+      def generate_auth_tag(header, iv, data)
+        auth_length = [header.length * 8].pack("Q>")
+        generate_digest [header, iv, data, auth_length].join
       end
 
       def decrypt_claims
