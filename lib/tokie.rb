@@ -27,20 +27,27 @@ module Tokie
     end
 
     def sign(options = {})
-      Signer.new(@claims, options).sign
+      Signer.new(@claims, self.class.insert_secret(options)).sign
     end
 
     def encrypt(options = {})
-      Encryptor.new(@claims, options).encrypt
+      Encryptor.new(@claims, self.class.insert_secret(options)).encrypt
     end
 
     class << self
+      attr_writer :secret
+
       def verify(signed_token, options = {})
-        Signer.verify(signed_token, options)
+        Signer.verify(signed_token, insert_secret(options))
       end
 
       def decrypt(encrypted_token, options = {})
-        Encryptor.decrypt(encrypted_token, options)
+        Encryptor.decrypt(encrypted_token, insert_secret(options))
+      end
+
+      def insert_secret(options)
+        options[:secret] ||= @secret
+        options
       end
     end
   end
