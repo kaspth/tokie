@@ -14,30 +14,27 @@ class EncryptorTest < ActiveSupport::TestCase
   end
 
   test "encrypting twice yields differing cipher text" do
-    first_message = @encryptor.encrypt.split('.').first
-    second_message = @encryptor.encrypt.split('.').first
+    first_message  = @encryptor.encrypt.split('.')[2]
+    second_message = @encryptor.encrypt.split('.')[2]
     refute_equal first_message, second_message
   end
 
   test "messing with either encrypted values causes failure" do
-    text, iv = @verifier.verify(@encryptor.encrypt).split('.')
-    refute_decrypted([iv, text] * '.')
-    refute_decrypted([text, munge(iv)] * '.')
-    refute_decrypted([munge(text), iv] * '.')
-    refute_decrypted([munge(text), munge(iv)] * '.')
-  end
+    header, key, claims, iv, auth_tag = @encryptor.encrypt.split('.')
+    refute_decrypted [header, key, claims, auth_tag, iv] * '.'
 
-  test "messing with verified values causes failures" do
-    text, iv = @encryptor.encrypt.split('.')
-    refute_verified([iv, text] * '.')
-    refute_verified([text, munge(iv)] * '.')
-    refute_verified([munge(text), iv] * '.')
-    refute_verified([munge(text), munge(iv)] * '.')
+    refute_decrypted [munge(header), key, claims, iv, auth_tag] * '.'
+    refute_decrypted [header, munge(key), claims, iv, auth_tag] * '.'
+    refute_decrypted [header, key, munge(claims), iv, auth_tag] * '.'
+    refute_decrypted [header, key, claims, munge(iv), auth_tag] * '.'
+    refute_decrypted [header, key, claims, iv, munge(auth_tag)] * '.'
+
+    refute_decrypted [munge(header), munge(key), munge(claims), munge(iv), munge(auth_tag)] * '.'
   end
 
   test "signed round tripping" do
     token = @encryptor.encrypt
-    assert_equal @data, decrypt(token)
+    assert_equal @data, decrypt(token).payload
   end
 
   test "alternative serialization method" do
@@ -51,31 +48,25 @@ class EncryptorTest < ActiveSupport::TestCase
   test "message obeys strict encoding" do
     bad_encoding_characters = "\n!@#"
     claims = Tokie::Claims.new("This is a very \n\nhumble string"+bad_encoding_characters)
-    message, iv = Tokie::Encryptor.new(claims, secret: SECRET).encrypt
+    parts = Tokie::Encryptor.new(claims, secret: SECRET).encrypt.split('.')
 
-    refute_decrypted("#{::Base64.encode64 message.to_s}.#{::Base64.encode64 iv.to_s}")
-    refute_verified("#{::Base64.encode64 message.to_s}.#{::Base64.encode64 iv.to_s}")
-
-    refute_decrypted([iv,  message] * bad_encoding_characters)
-    refute_verified([iv,  message] * bad_encoding_characters)
+    refute_decrypted encode64(parts).join('.')
+    refute_decrypted parts * bad_encoding_characters
   end
 
   private
-    def refute_decrypted(value)
-      assert_raise(Tokie::InvalidMessage) do
-        claims = Tokie::Claims.new(value)
-        decrypt Tokie::Signer.new(claims, secret: SECRET).sign
-      end
-    end
-
-    def refute_verified(token)
-      assert_raise(Tokie::InvalidSignature) { decrypt token }
+    def refute_decrypted(token)
+      assert_raise(Tokie::InvalidMessage) { decrypt token }
     end
 
     def munge(base64_string)
       bits = ::Base64.strict_decode64(base64_string)
       bits.reverse!
       ::Base64.strict_encode64(bits)
+    end
+
+    def encode64(args)
+      args.map { |a| ::Base64.encode64 a }
     end
 
     def decrypt(token, options = {})
