@@ -37,7 +37,7 @@ class EncryptorTest < ActiveSupport::TestCase
 
   test "signed round tripping" do
     token = @encryptor.encrypt
-    assert_equal @data, Tokie::Encryptor.decrypt(token)
+    assert_equal @data, decrypt(token)
   end
 
   test "alternative serialization method" do
@@ -79,7 +79,7 @@ class EncryptorTest < ActiveSupport::TestCase
     end
 
     def decrypt(token, options = {})
-      Tokie::Encryptor.verify token, options.merge(secret: SECRET)
+      Tokie::Encryptor.decrypt token, options.merge(secret: SECRET)
     end
 end
 
