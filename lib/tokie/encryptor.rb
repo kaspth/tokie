@@ -53,7 +53,13 @@ module Tokie
       end
 
       def decrypt_claims
-        header, key, iv, encrypted_data, auth_tag = Tokie.decode encrypted_token.split('.')
+        parts = @claims.split('.')
+        header = parts.shift
+        key, iv, encrypted_data, auth_tag = Tokie.decode *parts
+
+        unless secure_compare auth_tag, generate_auth_tag(header, iv, encrypted_data)
+          raise InvalidMessage
+        end
 
         cipher = build_cipher.decrypt
         cipher.iv = iv
