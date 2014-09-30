@@ -1,8 +1,12 @@
 require 'active_support/core_ext/object/blank'
+require 'tokie/concerns/digestable'
+require 'tokie/concerns/secure_comparable'
 require 'tokie/errors'
 
 module Tokie
   class Signer
+    include Digestable, SecureComparable
+
     def initialize(claims, secret:, digest: 'SHA1', serializer: Tokie.serializer)
       @claims = claims
       @secret = secret
@@ -48,22 +52,6 @@ module Tokie
           raise InvalidSignature if argument_error.message =~ %r{invalid base64}
           raise
         end
-      end
-
-      # constant-time comparison algorithm to prevent timing attacks
-      def secure_compare(a, b)
-        return false unless a.bytesize == b.bytesize
-
-        l = a.unpack "C#{a.bytesize}"
-
-        res = 0
-        b.each_byte { |byte| res |= byte ^ l.shift }
-        res == 0
-      end
-
-      def generate_digest(data)
-        require 'openssl' unless defined?(OpenSSL)
-        OpenSSL::HMAC.hexdigest(OpenSSL::Digest.const_get(@digest).new, @secret, data)
       end
   end
 end
