@@ -21,10 +21,10 @@ module Tokie
 
     def decrypt
       parts = @claims.split('.')
-      header = parts.shift
+      encoded_header = parts.shift
       key, iv, encrypted_data, auth_tag = Tokie.decode(*parts)
 
-      unless auth_tag.present? && secure_compare(auth_tag, generate_auth_tag(header, iv, encrypted_data))
+      unless untampered_data?(encoded_header, key, iv, encrypted_data, auth_tag)
         raise InvalidMessage
       end
 
@@ -54,6 +54,11 @@ module Tokie
       def generate_auth_tag(header, iv, data)
         auth_length = [header.length * 8].pack("Q>")
         generate_digest [header, iv, data, auth_length].join
+      end
+
+      def untampered_data?(encoded_header, key, iv, encrypted_data, auth_tag)
+        key == @secret && auth_tag.present? &&
+          secure_compare(auth_tag, generate_auth_tag(encoded_header, iv, encrypted_data))
       end
   end
 end
