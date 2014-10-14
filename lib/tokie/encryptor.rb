@@ -55,7 +55,7 @@ module Tokie
         header = parts.shift
         key, iv, encrypted_data, auth_tag = Tokie.decode *parts
 
-        unless secure_compare auth_tag, generate_auth_tag(header, iv, encrypted_data)
+        unless auth_tag.present? && secure_compare(auth_tag, generate_auth_tag(header, iv, encrypted_data))
           raise InvalidMessage
         end
 
