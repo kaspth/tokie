@@ -1,3 +1,4 @@
+require 'active_support/core_ext/object/blank'
 require 'tokie/concerns/digestable'
 require 'tokie/concerns/secure_comparable'
 require 'tokie/errors'
