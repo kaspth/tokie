@@ -1,4 +1,5 @@
 # Tokie
+[![Build Status](https://travis-ci.org/kaspth/tokie.svg)](https://travis-ci.org/kaspth/tokie)
 
 ```ruby
 # Set class level secret option so you don't have to pass it in everytime
