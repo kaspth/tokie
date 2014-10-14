@@ -26,10 +26,8 @@ module Tokie
       header << '.' << Tokie.encode(@secret, iv, encrypted_data, auth_tag).join('.')
     end
 
-    class << self
-      def decrypt(encrypted_token, options = {})
-        Claims.parse new(encrypted_token, options).send(:decrypt_claims), options
-      end
+    def decrypt(options = {})
+      @claims = Claims.parse(decrypt_claims, options)
     end
 
     private

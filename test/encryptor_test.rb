@@ -70,7 +70,7 @@ class EncryptorTest < ActiveSupport::TestCase
     end
 
     def decrypt(token, options = {})
-      Tokie::Encryptor.decrypt token, options.merge(secret: SECRET)
+      Tokie::Encryptor.new(token, options.merge(secret: SECRET)).decrypt
     end
 end
 

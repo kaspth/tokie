@@ -43,7 +43,7 @@ module Tokie
       end
 
       def decrypt(encrypted_token, options = {})
-        Encryptor.decrypt(encrypted_token, options)
+        Encryptor.new(encrypted_token, options).decrypt
       end
     end
   end
