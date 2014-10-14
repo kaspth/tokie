@@ -19,8 +19,22 @@ module Tokie
       header << '.' << Tokie.encode(@secret, iv, encrypted_data, auth_tag).join('.')
     end
 
-    def decrypt(options = {})
-      @claims = Claims.parse(decrypt_claims, options)
+    def decrypt
+      parts = @claims.split('.')
+      header = parts.shift
+      key, iv, encrypted_data, auth_tag = Tokie.decode(*parts)
+
+      unless auth_tag.present? && secure_compare(auth_tag, generate_auth_tag(header, iv, encrypted_data))
+        raise InvalidMessage
+      end
+
+      cipher = build_cipher.decrypt
+      cipher.iv = iv
+      decrypted_data = cipher.update(encrypted_data) + cipher.final
+
+      @serializer.load(decrypted_data)
+    rescue OpenSSL::Cipher::CipherError, TypeError, ArgumentError
+      raise InvalidMessage
     end
 
     private
@@ -39,24 +53,6 @@ module Tokie
       def generate_auth_tag(header, iv, data)
         auth_length = [header.length * 8].pack("Q>")
         generate_digest [header, iv, data, auth_length].join
-      end
-
-      def decrypt_claims
-        parts = @claims.split('.')
-        header = parts.shift
-        key, iv, encrypted_data, auth_tag = Tokie.decode *parts
-
-        unless auth_tag.present? && secure_compare(auth_tag, generate_auth_tag(header, iv, encrypted_data))
-          raise InvalidMessage
-        end
-
-        cipher = build_cipher.decrypt
-        cipher.iv = iv
-        decrypted_data = cipher.update(encrypted_data) + cipher.final
-
-        @serializer.load(decrypted_data)
-      rescue OpenSSL::Cipher::CipherError, TypeError, ArgumentError
-        raise InvalidMessage
       end
   end
 end

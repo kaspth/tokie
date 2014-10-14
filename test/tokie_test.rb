@@ -16,6 +16,12 @@ class TokieClassLevelSecretTest < ActiveSupport::TestCase
     end
   end
 
+  test "verify with purpose" do
+    token = Tokie::Token.new('payload', for: 'login').sign
+
+    assert_equal 'payload', Tokie::Token.verify(token, for: 'login').payload
+  end
+
   test "encrypt" do
     assert_equal 5, @token.encrypt.split('.').size
   end

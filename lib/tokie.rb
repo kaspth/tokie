@@ -40,11 +40,13 @@ module Tokie
 
     class << self
       def verify(signed_token, options = {})
-        Signer.new(signed_token, options).verify
+        verify_options = options.slice!(:for, :expires_in, :expires_at)
+        Claims.parse(Signer.new(signed_token, verify_options).verify, options)
       end
 
       def decrypt(encrypted_token, options = {})
-        Encryptor.new(encrypted_token, options).decrypt
+        encrypt_options = options.slice!(:for, :expires_in, :expires_at)
+        Claims.parse(Encryptor.new(encrypted_token, encrypt_options).decrypt, options)
       end
     end
   end

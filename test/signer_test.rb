@@ -15,7 +15,7 @@ class SignerTest < ActiveSupport::TestCase
 
   test 'simple round tripping' do
     claims = verify(@signer.sign)
-    assert_equal @data, claims.payload
+    assert_equal @data, claims['pld']
   end
 
   test 'missing signature raises' do
@@ -36,7 +36,7 @@ class SignerTest < ActiveSupport::TestCase
     token = Tokie::Signer.new(claims, serializer: JSON).sign
 
     exp = { "foo" => 123, "bar" => "2010-01-01 00:00:00 UTC" }
-    assert_equal exp, verify(token, serializer: JSON).payload
+    assert_equal exp, verify(token, serializer: JSON)['pld']
   end
 
   def verify(token, options = {})
