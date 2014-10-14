@@ -45,15 +45,6 @@ class EncryptorTest < ActiveSupport::TestCase
     assert_equal exp, decrypt(token).payload
   end
 
-  test "message obeys strict encoding" do
-    bad_encoding_characters = "\n!@#"
-    claims = Tokie::Claims.new("This is a very \n\nhumble string"+bad_encoding_characters)
-    parts = Tokie::Encryptor.new(claims, secret: SECRET).encrypt.split('.')
-
-    refute_decrypted encode64(parts).join('.')
-    refute_decrypted parts * bad_encoding_characters
-  end
-
   private
     def refute_decrypted(token)
       assert_raise(Tokie::InvalidMessage) { decrypt token }
