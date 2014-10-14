@@ -22,32 +22,48 @@ module Tokie
   end
 
   class Token
-    def initialize(payload, options = {})
-      @claims = Claims.new(payload, options)
+    def initialize(payload_or_token, claim_options = {})
+      @payload = extract_payload(payload_or_token)
+      @claim_options = claim_options
     end
 
     def payload
-      @claims.payload
+      claims.payload
+    end
+
+    def to_s
+      @encoded_data
     end
 
     def sign(options = {})
-      Signer.new(@claims, options).sign
+      @encoded_data = Signer.new(claims, options).sign
+    end
+
+    def verify(options = {})
+      parse_claims Signer.new(@payload, options).verify
+      self
     end
 
     def encrypt(options = {})
-      Encryptor.new(@claims, options).encrypt
+      @encoded_data = Encryptor.new(claims, options).encrypt
     end
 
-    class << self
-      def verify(signed_token, options = {})
-        verify_options = options.slice!(:for, :expires_in, :expires_at)
-        Claims.parse(Signer.new(signed_token, verify_options).verify, options)
+    def decrypt(options = {})
+      parse_claims Encryptor.new(@payload, options).decrypt
+      self
+    end
+
+    private
+      def extract_payload(token)
+        token.respond_to?(:payload) ? token.payload : token
       end
 
-      def decrypt(encrypted_token, options = {})
-        encrypt_options = options.slice!(:for, :expires_in, :expires_at)
-        Claims.parse(Encryptor.new(encrypted_token, encrypt_options).decrypt, options)
+      def parse_claims(data)
+        @claims = Claims.parse(data, @claim_options)
       end
-    end
+
+      def claims
+        @claims ||= Claims.new(@payload, @claim_options)
+      end
   end
 end

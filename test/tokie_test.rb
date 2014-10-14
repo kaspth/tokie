@@ -10,7 +10,7 @@ class TokieClassLevelSecretTest < ActiveSupport::TestCase
   end
 
   test "verify" do
-    Tokie::Token.verify(@token.sign).tap do |verified|
+    Tokie::Token.new(@token.sign).verify.tap do |verified|
       assert verified
       assert_respond_to verified, :payload
     end
@@ -19,7 +19,7 @@ class TokieClassLevelSecretTest < ActiveSupport::TestCase
   test "verify with purpose" do
     token = Tokie::Token.new('payload', for: 'login').sign
 
-    assert_equal 'payload', Tokie::Token.verify(token, for: 'login').payload
+    assert_equal 'payload', Tokie::Token.new(token, for: 'login').verify.payload
   end
 
   test "encrypt" do
@@ -27,7 +27,7 @@ class TokieClassLevelSecretTest < ActiveSupport::TestCase
   end
 
   test "decrypt" do
-    Tokie::Token.decrypt(@token.encrypt).tap do |decrypted|
+    Tokie::Token.new(@token.encrypt).decrypt.tap do |decrypted|
       assert decrypted
       assert_respond_to decrypted, :payload
     end
