@@ -34,7 +34,7 @@ class EncryptorTest < ActiveSupport::TestCase
 
   test "signed round tripping" do
     token = @encryptor.encrypt
-    assert_equal @data, decrypt(token).payload
+    assert_equal @data, decrypt(token)['pld']
   end
 
   test "alternative serialization method" do
@@ -42,7 +42,7 @@ class EncryptorTest < ActiveSupport::TestCase
     token = Tokie::Encryptor.new(claims, serializer: JSON).encrypt
 
     exp = { "foo" => 123, "bar" => "2010-01-01 00:00:00 UTC" }
-    assert_equal exp, decrypt(token).payload
+    assert_equal exp, decrypt(token, serializer: JSON)['pld']
   end
 
   private

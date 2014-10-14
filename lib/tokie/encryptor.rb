@@ -8,7 +8,7 @@ module Tokie
     end
 
     def encrypt
-      cipher = build_cipher.encrypt
+      cipher = build_cipher(:encrypt)
       iv = cipher.random_iv
 
       encrypted_data = cipher.update(encoded_claims) + cipher.final
@@ -28,7 +28,7 @@ module Tokie
         raise InvalidMessage
       end
 
-      cipher = build_cipher.decrypt
+      cipher = build_cipher(:decrypt)
       cipher.iv = iv
       decrypted_data = cipher.update(encrypted_data) + cipher.final
 
@@ -44,9 +44,10 @@ module Tokie
         end
       end
 
-      def build_cipher
-        OpenSSL::Cipher::Cipher.new(@cipher).tap do |c|
-          c.key = @secret
+      def build_cipher(type)
+        OpenSSL::Cipher::Cipher.new(@cipher).tap do |cipher|
+          cipher.send type
+          cipher.key = @secret
         end
       end
 
