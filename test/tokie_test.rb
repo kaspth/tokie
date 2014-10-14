@@ -6,7 +6,7 @@ class TokieClassLevelSecretTest < ActiveSupport::TestCase
   end
 
   test "sign" do
-    assert @token.sign
+    assert_equal 3, @token.sign.split('.').size
   end
 
   test "verify" do
@@ -17,7 +17,7 @@ class TokieClassLevelSecretTest < ActiveSupport::TestCase
   end
 
   test "encrypt" do
-    assert @token.encrypt
+    assert_equal 5, @token.encrypt.split('.').size
   end
 
   test "decrypt" do
