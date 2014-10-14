@@ -1,3 +1,4 @@
+require 'base64'
 require 'tokie/claims'
 require 'tokie/signer'
 require 'tokie/encryptor'
