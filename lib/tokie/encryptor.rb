@@ -1,17 +1,10 @@
-require 'tokie/concerns/digestable'
-require 'tokie/concerns/secure_comparable'
-require 'tokie/errors'
+require 'tokie/abstract_base'
 
 module Tokie
-  class Encryptor
-    include Digestable, SecureComparable
-
-    def initialize(claims, secret: Tokie.secret, digest: 'SHA1', serializer: nil, cipher: nil)
-      @claims = claims
-      @secret = secret
-      @digest = digest
-      @cipher = cipher || 'aes-256-cbc'
-      @serializer = serializer || Tokie.serializer
+  class Encryptor < AbstractBase
+    def initialize(claims, **options)
+      @cipher = options.delete(:cipher) || 'aes-256-cbc'
+      super
     end
 
     def encrypt
@@ -31,12 +24,10 @@ module Tokie
     end
 
     private
-      def encoded_header
-        { 'typ' => 'JWT', 'alg' => @digest.to_s, 'enc' => @cipher.to_s }.to_s
-      end
-
-      def encoded_claims
-        @serializer.dump @claims.to_h
+      def header
+        super.tap do |header|
+          header['enc'] = @cipher.to_s
+        end
       end
 
       def build_cipher

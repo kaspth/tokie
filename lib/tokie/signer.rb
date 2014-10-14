@@ -1,19 +1,8 @@
 require 'active_support/core_ext/object/blank'
-require 'tokie/concerns/digestable'
-require 'tokie/concerns/secure_comparable'
-require 'tokie/errors'
+require 'tokie/abstract_base'
 
 module Tokie
-  class Signer
-    include Digestable, SecureComparable
-
-    def initialize(claims, secret: Tokie.secret, digest: 'SHA1', serializer: Tokie.serializer)
-      @claims = claims
-      @secret = secret
-      @digest = digest
-      @serializer = serializer
-    end
-
+  class Signer < AbstractBase
     def sign
       data = Tokie.encode(encoded_header, encoded_claims).join('.')
       "#{data}.#{generate_digest(data)}"
@@ -24,14 +13,6 @@ module Tokie
     end
 
     private
-      def encoded_header
-        { 'typ' => 'JWT', 'alg' => @digest.to_s }.to_s
-      end
-
-      def encoded_claims
-        @serializer.dump @claims.to_h
-      end
-
       # Claims can be a signed token which can be parsed
       def verify_claims
         raise InvalidSignature if @claims.blank?
