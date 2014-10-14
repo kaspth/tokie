@@ -10,7 +10,7 @@ else
 class EncryptorTest < ActiveSupport::TestCase
   setup do
     @data = { some: 'data', now: Time.local(2010) }
-    @encryptor = Tokie::Encryptor.new(Tokie::Claims.new(@data), secret: SECRET)
+    @encryptor = Tokie::Encryptor.new(Tokie::Claims.new(@data))
   end
 
   test "encrypting twice yields differing cipher text" do
@@ -39,7 +39,7 @@ class EncryptorTest < ActiveSupport::TestCase
 
   test "alternative serialization method" do
     claims = Tokie::Claims.new({ foo: 123, 'bar' => Time.utc(2010) })
-    token = Tokie::Encryptor.new(claims, serializer: JSON, secret: SECRET).encrypt
+    token = Tokie::Encryptor.new(claims, serializer: JSON).encrypt
 
     exp = { "foo" => 123, "bar" => "2010-01-01 00:00:00 UTC" }
     assert_equal exp, decrypt(token).payload
@@ -61,7 +61,7 @@ class EncryptorTest < ActiveSupport::TestCase
     end
 
     def decrypt(token, options = {})
-      Tokie::Encryptor.new(token, options.merge(secret: SECRET)).decrypt
+      Tokie::Encryptor.new(token, options).decrypt
     end
 end
 

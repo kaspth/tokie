@@ -6,3 +6,4 @@ require 'minitest/autorun'
 require 'json'
 
 SECRET = 'forYOURsecretforYOURsecretforYOURsecret'
+Tokie.secret = SECRET

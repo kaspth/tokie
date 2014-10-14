@@ -10,7 +10,7 @@ else
 class SignerTest < ActiveSupport::TestCase
   setup do
     @data = { some: 'data', now: Time.local(2010) }
-    @signer = Tokie::Signer.new(Tokie::Claims.new(@data), secret: SECRET)
+    @signer = Tokie::Signer.new(Tokie::Claims.new(@data))
   end
 
   test 'simple round tripping' do
@@ -33,14 +33,14 @@ class SignerTest < ActiveSupport::TestCase
 
   test 'alternative serializer' do
     claims = Tokie::Claims.new({ foo: 123, 'bar' => Time.utc(2010) })
-    token = Tokie::Signer.new(claims, serializer: JSON, secret: SECRET).sign
+    token = Tokie::Signer.new(claims, serializer: JSON).sign
 
     exp = { "foo" => 123, "bar" => "2010-01-01 00:00:00 UTC" }
     assert_equal exp, verify(token, serializer: JSON).payload
   end
 
   def verify(token, options = {})
-    Tokie::Signer.new(token, options.merge(secret: SECRET)).verify
+    Tokie::Signer.new(token, options).verify
   end
 
   def refute_verified(token)

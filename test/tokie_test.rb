@@ -1,7 +1,5 @@
 require 'test_helper'
 
-Tokie.secret = SECRET
-
 class TokieClassLevelSecretTest < ActiveSupport::TestCase
   setup do
     @token = Tokie::Token.new('payload')
