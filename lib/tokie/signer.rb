@@ -7,7 +7,7 @@ module Tokie
   class Signer
     include Digestable, SecureComparable
 
-    def initialize(claims, secret:, digest: 'SHA1', serializer: Tokie.serializer)
+    def initialize(claims, secret: Tokie.secret, digest: 'SHA1', serializer: Tokie.serializer)
       @claims = claims
       @secret = secret
       @digest = digest

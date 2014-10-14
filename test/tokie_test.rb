@@ -1,6 +1,6 @@
 require 'test_helper'
 
-Tokie::Token.secret = SECRET
+Tokie.secret = SECRET
 
 class TokieClassLevelSecretTest < ActiveSupport::TestCase
   setup do

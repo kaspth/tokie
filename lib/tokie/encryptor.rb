@@ -6,7 +6,7 @@ module Tokie
   class Encryptor
     include Digestable, SecureComparable
 
-    def initialize(claims, secret:, digest: 'SHA1', serializer: nil, cipher: nil)
+    def initialize(claims, secret: Tokie.secret, digest: 'SHA1', serializer: nil, cipher: nil)
       @claims = claims
       @secret = secret
       @digest = digest

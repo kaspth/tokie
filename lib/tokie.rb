@@ -7,6 +7,9 @@ module Tokie
   module_function :serializer, :serializer=
   @serializer = Marshal
 
+  attr_accessor :secret
+  module_function :secret, :secret=
+
   class << self
     def encode(*args)
       args.map { |a| Base64.strict_encode64 a }
@@ -27,27 +30,20 @@ module Tokie
     end
 
     def sign(options = {})
-      Signer.new(@claims, self.class.insert_secret(options)).sign
+      Signer.new(@claims, options).sign
     end
 
     def encrypt(options = {})
-      Encryptor.new(@claims, self.class.insert_secret(options)).encrypt
+      Encryptor.new(@claims, options).encrypt
     end
 
     class << self
-      attr_writer :secret
-
       def verify(signed_token, options = {})
-        Signer.new(signed_token, insert_secret(options)).verify
+        Signer.new(signed_token, options).verify
       end
 
       def decrypt(encrypted_token, options = {})
-        Encryptor.decrypt(encrypted_token, insert_secret(options))
-      end
-
-      def insert_secret(options)
-        options[:secret] ||= @secret
-        options
+        Encryptor.decrypt(encrypted_token, options)
       end
     end
   end
