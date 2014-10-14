@@ -40,7 +40,7 @@ class SignerTest < ActiveSupport::TestCase
   end
 
   def verify(token, options = {})
-    Tokie::Signer.verify token, options.merge(secret: SECRET)
+    Tokie::Signer.new(token, options.merge(secret: SECRET)).verify
   end
 
   def refute_verified(token)

@@ -38,7 +38,7 @@ module Tokie
       attr_writer :secret
 
       def verify(signed_token, options = {})
-        Signer.verify(signed_token, insert_secret(options))
+        Signer.new(signed_token, insert_secret(options)).verify
       end
 
       def decrypt(encrypted_token, options = {})

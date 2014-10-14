@@ -19,10 +19,8 @@ module Tokie
       "#{data}.#{generate_digest(data)}"
     end
 
-    class << self
-      def verify(signed_token, options = {})
-        Claims.parse new(signed_token, options).send(:parse_claims), options
-      end
+    def verify(options = {})
+      @claims = Claims.parse(verify_claims, options)
     end
 
     private
@@ -35,7 +33,7 @@ module Tokie
       end
 
       # Claims can be a signed token which can be parsed
-      def parse_claims
+      def verify_claims
         raise InvalidSignature if @claims.blank?
 
         *token_data, digest = @claims.split('.').tap do |parts|
