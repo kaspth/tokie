@@ -10,7 +10,10 @@ class TokieClassLevelSecretTest < ActiveSupport::TestCase
   end
 
   test "verify" do
-    assert Tokie::Token.verify(@token.sign)
+    Tokie::Token.verify(@token.sign).tap do |verified|
+      assert verified
+      assert_respond_to verified, :payload
+    end
   end
 
   test "encrypt" do
@@ -18,6 +21,9 @@ class TokieClassLevelSecretTest < ActiveSupport::TestCase
   end
 
   test "decrypt" do
-    assert Tokie::Token.decrypt(@token.encrypt)
+    Tokie::Token.decrypt(@token.encrypt).tap do |decrypted|
+      assert decrypted
+      assert_respond_to decrypted, :payload
+    end
   end
 end
