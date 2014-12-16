@@ -1,28 +1,28 @@
 require 'tokie/abstract_base'
 require 'tokie/encryptor/auth_tag'
+require 'tokie/encryptor/cipher'
 
 module Tokie
   class Encryptor < AbstractBase
     def initialize(claims, **options)
-      @cipher = options.delete(:cipher) || 'aes-256-cbc'
+      cipher = options.delete(:cipher) || 'aes-256-cbc'
       super
+
+      @cipher = Cipher.new(cipher, @secret)
     end
 
     def encrypt
-      cipher = build_cipher(:encrypt)
-      iv = cipher.random_iv
-
-      encrypted_data = cipher.update(encoded_claims) + cipher.final
+      encrypted_data = @cipher.encrypt(encoded_claims)
 
       header = ::Base64.strict_encode64(encoded_header)
-      auth_tag = generate_digest AuthTag.generate(header, iv, encrypted_data)
+      auth_tag = generate_digest AuthTag.generate(header, @cipher.iv, encrypted_data)
 
-      header << '.' << Tokie.encode(@secret, iv, encrypted_data, auth_tag).join('.')
+      header << '.' << Tokie.encode(@secret, @cipher.iv, encrypted_data, auth_tag).join('.')
     end
 
     def decrypt
       if claims = parse_claims
-        @serializer.load decrypt_data(claims)
+        @serializer.load @cipher.decrypt(claims)
       end
     rescue OpenSSL::Cipher::CipherError, TypeError, ArgumentError
       nil
@@ -42,23 +42,10 @@ module Tokie
       def parse_claims
         parts = @claims.split('.')
         header = parts.shift
-        key, @_iv, claims, auth_tag = Tokie.decode(*parts)
+        key, @cipher.iv, claims, auth_tag = Tokie.decode(*parts)
 
-        if key == @secret && auth_tag.present? && untampered?(auth_tag, header, @_iv, claims)
+        if key == @secret && auth_tag.present? && untampered?(auth_tag, header, @cipher.iv, claims)
           claims
-        end
-      end
-
-      def decrypt_data(data)
-        cipher = build_cipher(:decrypt)
-        cipher.iv = @_iv
-        cipher.update(data) + cipher.final
-      end
-
-      def build_cipher(type)
-        OpenSSL::Cipher::Cipher.new(@cipher).tap do |cipher|
-          cipher.send type
-          cipher.key = @secret
         end
       end
 
