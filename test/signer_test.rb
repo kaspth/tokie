@@ -1,12 +1,5 @@
 require 'test_helper'
 
-begin
-  require 'openssl'
-  OpenSSL::Digest::SHA1
-rescue LoadError, NameError
-  $stderr.puts "Skipping Signer test: broken OpenSSL install"
-else
-
 class SignerTest < ActiveSupport::TestCase
   setup do
     @data = { some: 'data', now: Time.local(2010) }
@@ -50,6 +43,4 @@ class SignerTest < ActiveSupport::TestCase
   def refute_verified(token)
     assert_raises(Tokie::InvalidSignature) { verify token }
   end
-end
-
 end

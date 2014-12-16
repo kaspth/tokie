@@ -1,12 +1,5 @@
 require 'test_helper'
 
-begin
-  require 'openssl'
-  OpenSSL::Digest::SHA1
-rescue LoadError, NameError
-  $stderr.puts "Skipping Encryptor test: broken OpenSSL install"
-else
-
 class EncryptorTest < ActiveSupport::TestCase
   setup do
     @data = { some: 'data', now: Time.local(2010) }
@@ -63,6 +56,4 @@ class EncryptorTest < ActiveSupport::TestCase
     def decrypt(token, options = {})
       Tokie::Encryptor.new(token, options).decrypt
     end
-end
-
 end
