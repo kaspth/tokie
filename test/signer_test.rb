@@ -39,8 +39,12 @@ class SignerTest < ActiveSupport::TestCase
     assert_equal exp, verify(token, serializer: JSON)['pld']
   end
 
+  test 'verify without raising' do
+    refute Tokie::Signer.new('purejunk').verify
+  end
+
   def verify(token, options = {})
-    Tokie::Signer.new(token, options).verify
+    Tokie::Signer.new(token, options).verify!
   end
 
   def refute_verified(token)
