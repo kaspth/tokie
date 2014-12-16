@@ -1,4 +1,5 @@
 require 'tokie/abstract_base'
+require 'tokie/encryptor/auth_tag'
 
 module Tokie
   class Encryptor < AbstractBase
@@ -14,7 +15,7 @@ module Tokie
       encrypted_data = cipher.update(encoded_claims) + cipher.final
 
       header = ::Base64.strict_encode64(encoded_header)
-      auth_tag = generate_digest generate_auth_tag(header, iv, encrypted_data)
+      auth_tag = generate_digest AuthTag.generate(header, iv, encrypted_data)
 
       header << '.' << Tokie.encode(@secret, iv, encrypted_data, auth_tag).join('.')
     end
@@ -61,13 +62,8 @@ module Tokie
         end
       end
 
-      def generate_auth_tag(header, iv, data)
-        auth_length = [header.length * 8].pack("Q>")
-        [header, iv, data, auth_length].join
-      end
-
       def untampered?(auth_tag, *data)
-        super(auth_tag, generate_auth_tag(*data))
+        super(auth_tag, AuthTag.new(data).generate)
       end
   end
 end
