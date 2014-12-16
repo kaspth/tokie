@@ -21,9 +21,7 @@ module Tokie
     end
 
     def decrypt
-      if claims = parse_claims
-        @serializer.load @cipher.decrypt(claims)
-      end
+      parse
     rescue OpenSSL::Cipher::CipherError, TypeError, ArgumentError
       nil
     end
@@ -47,6 +45,10 @@ module Tokie
         if key == @secret && auth_tag.present? && untampered?(auth_tag, header, @cipher.iv, claims)
           claims
         end
+      end
+
+      def before_load(claims)
+        @cipher.decrypt(claims)
       end
 
       def untampered?(auth_tag, *data)

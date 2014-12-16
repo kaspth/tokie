@@ -23,6 +23,12 @@ module Tokie
         @serializer.dump @claims.to_h
       end
 
+      def parse
+        if claims = parse_claims
+          @serializer.load before_load(claims)
+        end
+      end
+
       def untampered?(digest, data)
         secure_compare digest, generate_digest(data)
       end

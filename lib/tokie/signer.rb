@@ -8,9 +8,7 @@ module Tokie
     end
 
     def verify
-      if claims = parse_claims
-        @serializer.load ::Base64.strict_decode64(claims)
-      end
+      parse
     rescue ArgumentError => error
       raise unless error.message =~ %r{invalid base64}
     end
@@ -27,6 +25,10 @@ module Tokie
         if parts.all?(&:present?) && untampered?(parts.pop, parts.join('.'))
           parts.last
         end
+      end
+
+      def before_load(claims)
+        ::Base64.strict_decode64(claims)
       end
   end
 end
