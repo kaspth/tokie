@@ -20,21 +20,15 @@ module Tokie
     end
 
     def decrypt
-      parts = @claims.split('.')
-      encoded_header = parts.shift
-      key, iv, encrypted_data, auth_tag = Tokie.decode(*parts)
-
-      unless untampered_data?(encoded_header, key, iv, encrypted_data, auth_tag)
-        raise InvalidMessage
+      if data = parse_claims
+        @serializer.load decrypt_data(data)
       end
-
-      cipher = build_cipher(:decrypt)
-      cipher.iv = iv
-      decrypted_data = cipher.update(encrypted_data) + cipher.final
-
-      @serializer.load(decrypted_data)
     rescue OpenSSL::Cipher::CipherError, TypeError, ArgumentError
-      raise InvalidMessage
+      nil
+    end
+
+    def decrypt!
+      decrypt || raise(InvalidMessage)
     end
 
     private
@@ -42,6 +36,22 @@ module Tokie
         super.tap do |header|
           header['enc'] = @cipher.to_s
         end
+      end
+
+      def parse_claims
+        parts = @claims.split('.')
+        header = parts.shift
+        key, @_iv, data, auth_tag = Tokie.decode(*parts)
+
+        if key == @secret && auth_tag.present? && untampered?(auth_tag, header, @_iv, data)
+          data
+        end
+      end
+
+      def decrypt_data(data)
+        cipher = build_cipher(:decrypt)
+        cipher.iv = @_iv
+        cipher.update(data) + cipher.final
       end
 
       def build_cipher(type)
@@ -56,9 +66,8 @@ module Tokie
         generate_digest [header, iv, data, auth_length].join
       end
 
-      def untampered_data?(encoded_header, key, iv, encrypted_data, auth_tag)
-        key == @secret && auth_tag.present? &&
-          secure_compare(auth_tag, generate_auth_tag(encoded_header, iv, encrypted_data))
+      def untampered?(auth_tag, *data)
+        secure_compare(auth_tag, generate_auth_tag(*data))
       end
   end
 end

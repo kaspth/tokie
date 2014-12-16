@@ -54,6 +54,6 @@ class EncryptorTest < ActiveSupport::TestCase
     end
 
     def decrypt(token, options = {})
-      Tokie::Encryptor.new(token, options).decrypt
+      Tokie::Encryptor.new(token, options).decrypt!
     end
 end
