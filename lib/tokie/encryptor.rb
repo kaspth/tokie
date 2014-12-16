@@ -14,14 +14,14 @@ module Tokie
       encrypted_data = cipher.update(encoded_claims) + cipher.final
 
       header = ::Base64.strict_encode64(encoded_header)
-      auth_tag = generate_auth_tag header, iv, encrypted_data
+      auth_tag = generate_digest generate_auth_tag(header, iv, encrypted_data)
 
       header << '.' << Tokie.encode(@secret, iv, encrypted_data, auth_tag).join('.')
     end
 
     def decrypt
-      if data = parse_claims
-        @serializer.load decrypt_data(data)
+      if claims = parse_claims
+        @serializer.load decrypt_data(claims)
       end
     rescue OpenSSL::Cipher::CipherError, TypeError, ArgumentError
       nil
@@ -41,10 +41,10 @@ module Tokie
       def parse_claims
         parts = @claims.split('.')
         header = parts.shift
-        key, @_iv, data, auth_tag = Tokie.decode(*parts)
+        key, @_iv, claims, auth_tag = Tokie.decode(*parts)
 
-        if key == @secret && auth_tag.present? && untampered?(auth_tag, header, @_iv, data)
-          data
+        if key == @secret && auth_tag.present? && untampered?(auth_tag, header, @_iv, claims)
+          claims
         end
       end
 
@@ -63,11 +63,11 @@ module Tokie
 
       def generate_auth_tag(header, iv, data)
         auth_length = [header.length * 8].pack("Q>")
-        generate_digest [header, iv, data, auth_length].join
+        [header, iv, data, auth_length].join
       end
 
       def untampered?(auth_tag, *data)
-        secure_compare(auth_tag, generate_auth_tag(*data))
+        super(auth_tag, generate_auth_tag(*data))
       end
   end
 end

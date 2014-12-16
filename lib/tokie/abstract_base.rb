@@ -26,5 +26,9 @@ module Tokie
       def encoded_claims
         @serializer.dump @claims.to_h
       end
+
+      def untampered?(digest, data)
+        secure_compare digest, generate_digest(data)
+      end
   end
 end

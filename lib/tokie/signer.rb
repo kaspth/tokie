@@ -28,9 +28,5 @@ module Tokie
           parts.last
         end
       end
-
-      def untampered?(digest, data)
-        secure_compare digest, generate_digest(data)
-      end
   end
 end
