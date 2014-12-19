@@ -36,6 +36,10 @@ class SignerTest < ActiveSupport::TestCase
     refute Tokie::Signer.new('purejunk').verify
   end
 
+  test 'valid?' do
+    assert Tokie::Signer.new(@signer.sign).valid?
+  end
+
   def verify(token, options = {})
     Tokie::Signer.new(token, options).verify!
   end

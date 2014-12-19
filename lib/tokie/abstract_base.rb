@@ -10,6 +10,11 @@ module Tokie
       @serializer = serializer
     end
 
+    def valid?
+      parse_claims
+    end
+    alias :validate :valid?
+
     private
       def header
         { 'typ' => 'JWT', 'alg' => @digest.to_s }
