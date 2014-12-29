@@ -1,3 +1,4 @@
+require 'active_support/security_utils'
 require 'active_support/core_ext/object/blank'
 require 'tokie/errors'
 
@@ -35,24 +36,12 @@ module Tokie
       end
 
       def untampered?(digest, data)
-        secure_compare digest, generate_digest(data)
+        ActiveSupport::SecurityUtils.secure_compare digest, generate_digest(data)
       end
 
       def generate_digest(data)
         require 'openssl' unless defined?(OpenSSL)
         OpenSSL::HMAC.hexdigest(OpenSSL::Digest.const_get(@digest).new, @secret, data)
-      end
-
-      # FIXME: Ditch in favor of ActiveSupport::SecurityUtils once 4.2 ships.
-      # constant-time comparison algorithm to prevent timing attacks
-      def secure_compare(a, b)
-        return false unless a.bytesize == b.bytesize
-
-        l = a.unpack "C#{a.bytesize}"
-
-        res = 0
-        b.each_byte { |byte| res |= byte ^ l.shift }
-        res == 0
       end
   end
 end
