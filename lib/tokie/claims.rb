@@ -15,9 +15,15 @@ module Tokie
       attr_accessor :expires_in
 
       def parse(claims, options = {})
+        if verify!(claims, options)
+          new claims['pld'], expires_at: claims['exp'], for: claims['for']
+        end
+      end
+
+      def verify!(claims, options)
         raise InvalidSignature if claims['for'] != pick_purpose(options)
 
-        new claims['pld'], expires_at: parse_expiration(claims['exp']), for: claims['for']
+        claims['pld'] if parse_expiration(claims['exp'])
       end
 
       def pick_purpose(options)
@@ -26,7 +32,7 @@ module Tokie
 
       private
         def parse_expiration(expiration)
-          return unless expiration
+          return true unless expiration
 
           Time.iso8601(expiration).tap do |timestamp|
             raise ExpiredClaims if Time.now.utc > timestamp
