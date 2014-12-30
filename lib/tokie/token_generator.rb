@@ -1,6 +1,7 @@
-require 'tokie/errors'
-
 module Tokie
+  class InvalidSignature < StandardError; end
+  class InvalidMessage < StandardError; end
+
   class TokenGenerator
     def initialize(options = {})
       @generator_options = options

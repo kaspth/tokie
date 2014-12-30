@@ -21,7 +21,7 @@ class ClaimsPurposeTest < ActiveSupport::TestCase
   end
 
   test 'parse raises with purpose mismatch' do
-    assert_raises Tokie::InvalidSignature do
+    assert_raises Tokie::InvalidClaims do
       Tokie::Claims.parse @login_claims.to_h, for: 'not_this'
     end
   end

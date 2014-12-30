@@ -1,7 +1,9 @@
 require 'time'
-require 'tokie/errors'
 
 module Tokie
+  class InvalidClaims < StandardError; end
+  class ExpiredClaims < StandardError; end
+
   class Claims
     attr_reader :payload, :purpose, :expires_at
 
@@ -21,7 +23,7 @@ module Tokie
       end
 
       def verify!(claims, options)
-        raise InvalidSignature if claims['for'] != pick_purpose(options)
+        raise InvalidClaims if claims['for'] != pick_purpose(options)
 
         claims['pld'] if parse_expiration(claims['exp'])
       end
