@@ -2,14 +2,12 @@
 [![Build Status](https://travis-ci.org/kaspth/tokie.svg)](https://travis-ci.org/kaspth/tokie)
 
 ```ruby
-# Set class level secret option so you don't have to pass it in everytime
-Tokie::Token.secret = @secret
+# Create a generator to sign, verify, encrypt and decrypt tokens
+generator = Tokie::TokenGenerator.new(secret: @secret)
 
-token = Tokie::Token.new("I'm the muffin", expires_in: 1.month)
-encrypted_token = token.encrypt # => Base64 encoded string
-signed_token = Tokie::Token.new(encrypted_token).sign # => Base64 encoded string
+encrypted_token = generator.encrypt("I'm the muffin", expires_in: 1.month) # => Base64 encoded token
+signed_token = generator.sign(encrypted_token) # => Base64 encoded token
 
-verified_token = Tokie::Token.new(signed_token).verify
-decrypted_token = Tokie::Token.new(verified_token).decrypt
-decrypted_token.payload # => "I'm the muffin"
+verified_token = generator.verify(signed_token)
+generator.decrypt(verified_token) # => "I'm the muffin"
 ```
