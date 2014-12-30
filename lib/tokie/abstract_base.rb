@@ -4,7 +4,7 @@ require 'tokie/errors'
 
 module Tokie
   class AbstractBase
-    def initialize(claims, secret: Tokie.secret, digest: 'SHA1', serializer: Marshal)
+    def initialize(claims, secret:, digest: 'SHA1', serializer: Marshal)
       @claims = claims
       @secret = secret
       @digest = digest

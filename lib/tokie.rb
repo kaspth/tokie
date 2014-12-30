@@ -4,9 +4,6 @@ require 'tokie/signer'
 require 'tokie/encryptor'
 
 module Tokie
-  attr_accessor :secret
-  module_function :secret, :secret=
-
   class << self
     def encode(*args)
       args.map { |a| Base64.strict_encode64 a }

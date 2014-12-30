@@ -12,4 +12,3 @@ require 'tokie'
 ActiveSupport::TestCase.test_order = :random
 
 SECRET = 'forYOURsecretforYOURsecretforYOURsecret'
-Tokie.secret = SECRET
