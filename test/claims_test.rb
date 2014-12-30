@@ -1,4 +1,5 @@
 require 'test_helper'
+require 'minitest/mock'
 
 class ClaimsTest < ActiveSupport::TestCase
   setup do
@@ -135,4 +136,30 @@ class ClaimsExpirationTest < ActiveSupport::TestCase
     def encode_claims(options = {})
       Tokie::Claims.new('payload', options).to_h
     end
+end
+
+class ClaimsVersioningTest < ActiveSupport::TestCase
+  test "fetching a version" do
+    assert_equal Tokie::Claims::V1, Tokie::Claims.version(:V1)
+  end
+
+  test "fetching non existent version" do
+    assert_raise NameError do
+      Tokie::Claims.version(:UninitializedConstant)
+    end
+  end
+
+  test "versioning" do
+    class Tokie::Claims::V200
+      def self.verify!(data, options = {})
+        '2.0: Much faster! Very lazy!'
+      end
+    end
+
+    assert_equal Tokie::Claims::V200, Tokie::Claims.version(:V200)
+
+    Tokie::Claims.stub(:latest_version, :V200) do
+      assert_equal '2.0: Much faster! Very lazy!', Tokie::Claims.verify!('something')
+    end
+  end
 end
