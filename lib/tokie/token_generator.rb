@@ -9,12 +9,8 @@ module Tokie
       claims.payload
     end
 
-    def to_s
-      @encoded_data
-    end
-
     def sign(options = {})
-      @encoded_data = Signer.new(claims, options).sign
+      Signer.new(claims, options).sign
     end
 
     def verify(options = {})
@@ -23,7 +19,7 @@ module Tokie
     end
 
     def encrypt(options = {})
-      @encoded_data = Encryptor.new(claims, options).encrypt
+      Encryptor.new(claims, options).encrypt
     end
 
     def decrypt(options = {})
