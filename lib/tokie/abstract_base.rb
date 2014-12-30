@@ -17,7 +17,7 @@ module Tokie
 
     private
       def header
-        { 'typ' => 'JWT', 'alg' => @digest.to_s }
+        { 'typ' => 'JWT', 'alg' => @digest.to_s, 'ver' => @claims.version }
       end
 
       def encoded_header

@@ -3,8 +3,7 @@ module Tokie
   class InvalidMessage < StandardError; end
 
   class TokenGenerator
-    def initialize(version: Claims.latest_version, **options)
-      @version = version
+    def initialize(options = {})
       @generator_options = options
     end
 
@@ -20,7 +19,7 @@ module Tokie
 
     def verify(data, options = {})
       if claims = Signer.new(data, @generator_options).verify
-        Claims.version(@version).verify!(claims, options)
+        Claims.verify!(claims, options)
       end
     end
 
@@ -40,7 +39,7 @@ module Tokie
 
     def decrypt(data, options = {})
       if claims = Encryptor.new(data, @generator_options).decrypt
-        Claims.version(@version).verify!(claims, options)
+        Claims.verify!(claims, options)
       end
     end
 

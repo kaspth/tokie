@@ -149,17 +149,11 @@ class ClaimsVersioningTest < ActiveSupport::TestCase
     end
   end
 
-  test "versioning" do
-    class Tokie::Claims::V200
-      def self.verify!(data, options = {})
-        '2.0: Much faster! Very lazy!'
-      end
-    end
+  test "verify! dispatches to version class" do
+    assert Tokie::Claims.verify! 'pld' => 'hello', 'for' => 'universal'
+  end
 
-    assert_equal Tokie::Claims::V200, Tokie::Claims.version(:V200)
-
-    Tokie::Claims.stub(:latest_version, :V200) do
-      assert_equal '2.0: Much faster! Very lazy!', Tokie::Claims.verify!('something')
-    end
+  test "version" do
+    assert_equal 'V1', Tokie::Claims::V1.version
   end
 end

@@ -8,14 +8,14 @@ module Tokie
     extend self
 
     def method_missing(meth, *args, &block)
-      version(latest_version).send(meth, *args, &block)
+      version.send(meth, *args, &block)
     end
 
     def latest_version
       :V1
     end
 
-    def version(version)
+    def version(version = nil)
       const_get version || latest_version
     rescue NameError
       raise ArgumentError, "unknown version: #{version}"
@@ -39,7 +39,7 @@ module Tokie
           end
         end
 
-        def verify!(claims, options)
+        def verify!(claims, options = {})
           raise InvalidClaims if claims['for'] != pick_purpose(options)
 
           claims['pld'] if parse_expiration(claims['exp'])
@@ -47,6 +47,10 @@ module Tokie
 
         def pick_purpose(options)
           options.fetch(:for) { 'universal' }
+        end
+
+        def version
+          name.split('::').last
         end
 
         private
@@ -57,6 +61,10 @@ module Tokie
               raise ExpiredClaims if Time.now.utc > timestamp
             end
           end
+      end
+
+      def version
+        self.class.version
       end
 
       def to_h
