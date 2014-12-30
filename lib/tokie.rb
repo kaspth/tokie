@@ -4,10 +4,6 @@ require 'tokie/signer'
 require 'tokie/encryptor'
 
 module Tokie
-  attr_accessor :serializer
-  module_function :serializer, :serializer=
-  @serializer = Marshal
-
   attr_accessor :secret
   module_function :secret, :secret=
 
