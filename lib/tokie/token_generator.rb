@@ -1,43 +1,31 @@
 module Tokie
   class TokenGenerator
-    def initialize(payload_or_token, claim_options = {})
-      @payload = extract_payload(payload_or_token)
-      @claim_options = claim_options
+    def initialize(options = {})
+      @generator_options = options
     end
 
-    def payload
-      claims.payload
+    def sign(message, options = {})
+      claims = Claims.new(message, options)
+
+      Signer.new(claims, @generator_options).sign
     end
 
-    def sign(options = {})
-      Signer.new(claims, options).sign
-    end
-
-    def verify(options = {})
-      parse_claims Signer.new(@payload, options).verify
-      self
-    end
-
-    def encrypt(options = {})
-      Encryptor.new(claims, options).encrypt
-    end
-
-    def decrypt(options = {})
-      parse_claims Encryptor.new(@payload, options).decrypt
-      self
-    end
-
-    private
-      def extract_payload(token)
-        token.respond_to?(:payload) ? token.payload : token
+    def verify(data, options = {})
+      if claims = Signer.new(data, @generator_options).verify
+        Claims.verify!(claims, options)
       end
+    end
 
-      def parse_claims(data)
-        @claims = Claims.parse(data, @claim_options)
-      end
+    def encrypt(message, options = {})
+      claims = Claims.new(message, options)
 
-      def claims
-        @claims ||= Claims.new(@payload, @claim_options)
+      Encryptor.new(claims, @generator_options).encrypt
+    end
+
+    def decrypt(data, options = {})
+      if claims = Encryptor.new(data, @generator_options).decrypt
+        Claims.verify!(claims, options)
       end
+    end
   end
 end
