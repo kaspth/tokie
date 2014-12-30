@@ -144,7 +144,7 @@ class ClaimsVersioningTest < ActiveSupport::TestCase
   end
 
   test "fetching non existent version" do
-    assert_raise NameError do
+    assert_raise ArgumentError do
       Tokie::Claims.version(:UninitializedConstant)
     end
   end

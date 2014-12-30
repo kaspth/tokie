@@ -17,6 +17,8 @@ module Tokie
 
     def version(version)
       const_get version || latest_version
+    rescue NameError
+      raise ArgumentError, "unknown version: #{version}"
     end
 
     class V1
