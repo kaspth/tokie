@@ -1,5 +1,5 @@
 module Tokie
-  class Token
+  class TokenGenerator
     def initialize(payload_or_token, claim_options = {})
       @payload = extract_payload(payload_or_token)
       @claim_options = claim_options

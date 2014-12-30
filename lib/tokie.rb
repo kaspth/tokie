@@ -17,5 +17,5 @@ module Tokie
     end
   end
 
-  autoload :Token, 'tokie/token'
+  autoload :TokenGenerator, 'tokie/token_generator'
 end
