@@ -40,7 +40,7 @@ class EncryptorTest < ActiveSupport::TestCase
 
   private
     def refute_decrypted(token)
-      assert_raise(Tokie::InvalidMessage) { decrypt token }
+      refute decrypt(token)
     end
 
     def munge(base64_string)
@@ -54,6 +54,6 @@ class EncryptorTest < ActiveSupport::TestCase
     end
 
     def decrypt(token, options = {})
-      Tokie::Encryptor.new(token, options.merge(secret: SECRET)).decrypt!
+      Tokie::Encryptor.new(token, options.merge(secret: SECRET)).decrypt
     end
 end

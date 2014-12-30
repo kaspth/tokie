@@ -18,6 +18,12 @@ class TokenGeneratorTest < ActiveSupport::TestCase
     assert_verified 'payload', for: 'login'
   end
 
+  test "verify!" do
+    assert_raise(Tokie::InvalidSignature) do
+      @generator.verify!('not really a token, eh?')
+    end
+  end
+
   test "encrypt" do
     assert_equal 5, @generator.encrypt('payload').split('.').size
   end
@@ -25,6 +31,12 @@ class TokenGeneratorTest < ActiveSupport::TestCase
   test "decrypt" do
     @generator.decrypt(@generator.encrypt('payload')).tap do |decrypted|
       assert_equal 'payload', decrypted
+    end
+  end
+
+  test "decrypt!" do
+    assert_raise(Tokie::InvalidMessage) do
+      @generator.decrypt!('not really a token, eh?')
     end
   end
 

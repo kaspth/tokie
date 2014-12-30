@@ -13,10 +13,6 @@ module Tokie
       raise unless error.message =~ %r{invalid base64}
     end
 
-    def verify!
-      verify || raise(InvalidSignature)
-    end
-
     private
       def parse_claims
         return if @claims.blank?

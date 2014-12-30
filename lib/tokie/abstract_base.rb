@@ -1,6 +1,5 @@
 require 'active_support/security_utils'
 require 'active_support/core_ext/object/blank'
-require 'tokie/errors'
 
 module Tokie
   class AbstractBase

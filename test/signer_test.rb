@@ -45,10 +45,10 @@ class SignerTest < ActiveSupport::TestCase
   end
 
   def verify(token, options = {})
-    signer(token, options).verify!
+    signer(token, options).verify
   end
 
   def refute_verified(token)
-    assert_raises(Tokie::InvalidSignature) { verify token }
+    refute verify(token)
   end
 end

@@ -1,3 +1,5 @@
+require 'tokie/errors'
+
 module Tokie
   class TokenGenerator
     def initialize(options = {})
@@ -16,6 +18,10 @@ module Tokie
       end
     end
 
+    def verify!(data, options = {})
+      verify(data, options) || raise(InvalidSignature)
+    end
+
     def encrypt(message, options = {})
       claims = Claims.new(message, options)
 
@@ -26,6 +32,10 @@ module Tokie
       if claims = Encryptor.new(data, @generator_options).decrypt
         Claims.verify!(claims, options)
       end
+    end
+
+    def decrypt!(data, options = {})
+      decrypt(data, options) || raise(InvalidMessage)
     end
   end
 end

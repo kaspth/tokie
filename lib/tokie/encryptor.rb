@@ -26,10 +26,6 @@ module Tokie
       nil
     end
 
-    def decrypt!
-      decrypt || raise(InvalidMessage)
-    end
-
     private
       def header
         super.tap do |header|
