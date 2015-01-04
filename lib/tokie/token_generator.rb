@@ -7,6 +7,10 @@ module Tokie
       @generator_options = options
     end
 
+    def signed_token?(token)
+      Signer.new(token, @generator_options).valid?
+    end
+
     def sign(message, options = {})
       claims = Claims.new(message, options)
 
@@ -21,6 +25,10 @@ module Tokie
 
     def verify!(data, options = {})
       verify(data, options) || raise(InvalidSignature)
+    end
+
+    def encrypted_token?(token)
+      Encryptor.new(token, @generator_options).valid?
     end
 
     def encrypt(message, options = {})

@@ -5,6 +5,11 @@ class TokenGeneratorTest < ActiveSupport::TestCase
     @generator = Tokie::TokenGenerator.new(secret: SECRET)
   end
 
+  test "signed_token?" do
+    assert @generator.signed_token?(@generator.sign('payload'))
+    refute @generator.signed_token?('hello')
+  end
+
   test "sign" do
     assert_equal 3, @generator.sign('payload').split('.').size
   end
@@ -22,6 +27,11 @@ class TokenGeneratorTest < ActiveSupport::TestCase
     assert_raise(Tokie::InvalidSignature) do
       @generator.verify!('not really a token, eh?')
     end
+  end
+
+  test "encrypted_token?" do
+    assert @generator.encrypted_token?(@generator.encrypt('payload'))
+    refute @generator.encrypted_token?('hello')
   end
 
   test "encrypt" do
