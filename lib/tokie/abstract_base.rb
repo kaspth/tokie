@@ -11,7 +11,7 @@ module Tokie
     end
 
     def valid?
-      parse_claims
+      true if parse_claims
     end
     alias :validate :valid?
 
